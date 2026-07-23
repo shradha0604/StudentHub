@@ -12,10 +12,12 @@ import {
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { login, getApiErrorMessage } from '../services/api'
+import { useAuth } from "../context/AuthContext";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate()
-
+  const { refreshUser } = useAuth();
   // --- Form States ---
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,7 +33,7 @@ const LoginPage: React.FC = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin =async  (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -56,13 +58,22 @@ const LoginPage: React.FC = () => {
     }
 
     // 3. Simulated Authentic Pass
-    setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
-      navigate('/dashboard')
-    }, 1500)
-  }
+   setIsSubmitting(true)
 
+    try {
+      const response = await login(email, password)
+
+      localStorage.setItem("token", response.access_token);
+
+      await refreshUser();
+
+      navigate("/dashboard");
+
+  } catch (error) {
+      setError(getApiErrorMessage(error))
+  } finally {
+      setIsSubmitting(false)
+  }}
   const handleContinueAsGuest = () => {
     setIsSubmitting(true)
     setTimeout(() => {

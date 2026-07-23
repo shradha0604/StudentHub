@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/Card'
@@ -7,6 +7,7 @@ import { useToast } from '../components/ui/Toast'
 import { useSearch } from '../context/SearchContext'
 import { QuillMascot } from '../components/ui/QuillMascot'
 import { EmptyState } from '../components/ui/EmptyState'
+import { getCurrentUser, getDashboardStats } from "../services/api";
 import {
   BookOpen,
   Cpu,
@@ -41,9 +42,15 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate()
   const { showToast } = useToast()
   const { searchQuery } = useSearch()
+  const [user, setUser] = useState<any>(null)
 
-  const readingTime = 45
-  const dailyGoal = 60
+  const [stats, setStats] = useState({
+    reading_time: 0,
+    daily_goal: 60,
+    pages_read: 0,
+    streak: 0,
+    ai_questions: 0,
+});
 
   const quote: Quote = {
     text: "Books are the quietest and most constant of friends; they are the most accessible and wisest of counselors, and the most patient of teachers.",
@@ -119,6 +126,23 @@ const Dashboard: React.FC = () => {
     showToast('This archival task is currently locked. Connect AI core to run.')
   }
 
+  useEffect(() => {
+  const loadUser = async () => {
+    try {
+      const currentUser = await getCurrentUser()
+      setUser(currentUser)
+      const dashboardStats = await getDashboardStats();
+
+      setStats(dashboardStats);
+    } catch (error) {
+      console.error(error)
+      localStorage.removeItem("token")
+      navigate("/login")
+    }
+  }
+
+  loadUser()
+}, [navigate])
   return (
     <div className="space-y-6">
       
@@ -134,10 +158,10 @@ const Dashboard: React.FC = () => {
               Hi! I'm Quill
             </span>
             <h1 className="text-2xl font-bold tracking-tight font-serif text-text">
-              Ready for another productive study session?
+                 Welcome back, {user?.full_name ?? "Student"}!
             </h1>
             <p className="text-xs text-text/60 font-sans leading-relaxed">
-              Your premium digital study catalog is fully indexed. Your notes, papers, and AI study assistants are ready in a quiet room setting.
+              ready for another productive study session??
             </p>
           </div>
         </div>
@@ -225,11 +249,10 @@ const Dashboard: React.FC = () => {
                   <div className="flex items-center justify-between gap-4">
                     <div className="space-y-1">
                       <p className="text-2xl font-bold text-text font-serif">
-                        {readingTime} <span className="text-xs text-text/50 font-sans font-medium">min</span>
-                      </p>
+{stats.reading_time} <span className="text-xs text-text/50 font-sans font-medium">min</span>                      </p>
                       <p className="text-[10px] text-text/50">
-                        Goal: {dailyGoal} min ({Math.round((readingTime / dailyGoal) * 100)}% met)
-                      </p>
+Goal: {stats.daily_goal} min (
+{Math.round((stats.reading_time / stats.daily_goal) * 100)}% met)                      </p>
                     </div>
                     
                     {/* Visual Circle Meter */}
@@ -244,7 +267,7 @@ const Dashboard: React.FC = () => {
                           strokeWidth="3.5"
                           fill="transparent"
                           strokeDasharray={2 * Math.PI * 24}
-                          strokeDashoffset={2 * Math.PI * 24 * (1 - Math.min(readingTime / dailyGoal, 1))}
+                          strokeDashoffset={2 * Math.PI * 24 *(1 - Math.min(stats.reading_time / stats.daily_goal, 1))}
                           strokeLinecap="round"
                         />
                       </svg>
@@ -256,11 +279,15 @@ const Dashboard: React.FC = () => {
 
                   <div className="grid grid-cols-2 gap-2 text-center text-[10px] text-text/60 border-t border-border/40 pt-3">
                     <div className="border-r border-border/40">
-                      <p className="font-bold text-text">14 Pages</p>
+                    <p className="font-bold text-text">
+                        {stats.pages_read} Pages
+                    </p>
                       <p>Read today</p>
                     </div>
                     <div>
-                      <p className="font-bold text-text">3 hrs</p>
+                    <p className="font-bold text-text">
+                        {stats.streak}
+                    </p>
                       <p>Current streak</p>
                     </div>
                   </div>

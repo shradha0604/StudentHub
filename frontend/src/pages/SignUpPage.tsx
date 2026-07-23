@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { signupUser } from "../services/api";
 
 const SignUpPage: React.FC = () => {
   const navigate = useNavigate()
@@ -25,6 +26,7 @@ const SignUpPage: React.FC = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [collegeName, setCollegeName] = useState('')
   const [course, setCourse] = useState('')
   const [yearOfStudy, setYearOfStudy] = useState('1st Year')
@@ -41,7 +43,7 @@ const SignUpPage: React.FC = () => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)
   }
 
-  const handleSignUp = (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
 
@@ -70,6 +72,10 @@ const SignUpPage: React.FC = () => {
       setError('Passwords do not match. Please verify your typing.')
       return
     }
+    if (!dateOfBirth) {
+      setError("Please select your date of birth.");
+      return;
+    }
     if (!collegeName.trim()) {
       setError('Please enter your college name.')
       return
@@ -84,11 +90,28 @@ const SignUpPage: React.FC = () => {
     }
 
     // 2. Simulated Authentic registration
-    setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
-      navigate('/dashboard')
-    }, 1500)
+    setIsSubmitting(true);
+
+    try {
+      await signupUser({
+      full_name: fullName,
+      email,
+      password,
+      date_of_birth: dateOfBirth,
+      college_name: collegeName,
+      course,
+      year_of_study: yearOfStudy,
+    });
+
+    navigate("/login");
+  } catch (err: any) {
+  setError(
+    err.response?.data?.detail ??
+    "Unable to create your account."
+  );
+} finally {
+  setIsSubmitting(false);
+}
   }
 
   const handleContinueAsGuest = () => {
@@ -307,6 +330,27 @@ const SignUpPage: React.FC = () => {
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                </div>
+              </div>
+
+              #to add DOB INPUT
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-text/50 uppercase tracking-wider">
+                  Date of Birth
+                </label>
+
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-text/40">
+                      <Calendar className="w-4 h-4" />
+                  </span>
+
+                  <input
+                      type="date"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 bg-card border border-border text-text rounded-[10px] focus:outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/25"
+                      disabled={isSubmitting}
+                  />
                 </div>
               </div>
 

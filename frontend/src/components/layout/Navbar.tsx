@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { Search, Bell, Menu, Compass, Sun, Moon, User, LogOut, Settings as SettingsIcon, BookOpenCheck } from 'lucide-react'
 import { useToast } from '../ui/Toast'
 import { useSearch } from '../../context/SearchContext'
+import { useAuth } from "../../context/AuthContext";
 
 interface NavbarProps {
   onToggleSidebar: () => void
@@ -12,6 +13,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { showToast } = useToast()
   const { searchQuery, setSearchQuery } = useSearch()
   const navigate = useNavigate()
+  const { user, logout, loading } = useAuth();
 
   const [showNotifications, setShowNotifications] = useState(false)
   const [showUserMenu, setShowUserMenu] = useState(false)
@@ -57,16 +59,28 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   ]
 
   const handleLogout = () => {
-    showToast('Logged out of StudentHub library session.')
-    setTimeout(() => {
-      navigate('/')
-    }, 500)
+    logout();
+
+    showToast("Logged out successfully.");
+
+    navigate("/login");
   }
 
   const handleProfileClick = () => {
     showToast('Profile credentials portal is active.')
     setShowUserMenu(false)
   }
+
+  const getInitials = (name: string) => {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+};
+  if (loading) {
+  return null;
+}
 
   return (
     <header className="sticky top-0 z-20 h-16 w-full border-b border-border bg-card/95 backdrop-blur-md px-6 flex items-center justify-between">
@@ -163,11 +177,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             className="flex items-center gap-2.5 cursor-pointer select-none"
           >
             <div className="hidden md:block text-right">
-              <p className="text-xs font-semibold text-text leading-tight">Zoha Khader</p>
-              <p className="text-[10px] text-text/45 font-medium">Academic Reader</p>
-            </div>
+            <p className="text-xs font-semibold text-text leading-tight">
+                      {user?.full_name ?? "Student"}
+            </p>              
+            <p className="text-[10px] text-text/45 font-medium">
+                      {user?.course ?? "Student"}
+            </p>       
+          </div>
             <div className="h-8 w-8 rounded-[10px] border border-secondary/50 bg-primary/10 text-primary font-bold text-xs flex items-center justify-center shadow-sm">
-              ZK
+              {getInitials(user?.full_name || "Student")}
             </div>
           </div>
 
@@ -175,8 +193,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <div className="absolute right-0 mt-3 w-56 bg-card border border-border rounded-[10px] shadow-lg py-1.5 z-30 font-sans text-xs divide-y divide-border/40">
               {/* Profile details preview */}
               <div className="px-4 py-2.5 bg-background/30">
-                <p className="font-bold text-text">Zoha Khader</p>
-                <p className="text-[10px] text-text/50">zoha@studenthub-ai.edu</p>
+                <p className="font-bold text-text">{user?.full_name ?? "Student"}</p>
+                <p className="text-[10px] text-text/50">{user?.email ?? "student@studenthub-ai.edu"}</p>
               </div>
 
               {/* Action items */}

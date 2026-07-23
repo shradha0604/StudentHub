@@ -5,18 +5,30 @@ Creates the FastAPI app, configures CORS, registers all routers,
 and defines global exception handlers so every error response
 (400/404/422/429/500) has a consistent JSON shape.
 """
-
+from app.utils.database import Base, engine
+from app.models.user_model import User
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-
+from app.routers import dashboard
 from app.config import settings
+from app.models.chat_model import ChatMessage
 from app.models.response_models import ErrorResponse
-from app.routers import assignment, chat, flashcards, planner, quiz, summarize
+from app.routers import (
+    assignment,
+    chat,
+    flashcards,
+    planner,
+    quiz,
+    summarize,
+    auth,
+)
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="StudentHub AI",
@@ -46,6 +58,8 @@ app.include_router(quiz.router)
 app.include_router(planner.router)
 app.include_router(assignment.router)
 app.include_router(flashcards.router)
+app.include_router(auth.router)
+app.include_router(dashboard.router)
 
 # ----------------------------------------------------------------------
 # Global exception handlers

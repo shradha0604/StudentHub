@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.config import settings
 
+from datetime import date
+
 
 class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=4000)
@@ -110,3 +112,23 @@ class FlashcardsRequest(BaseModel):
         if not v.strip():
             raise ValueError("topic cannot be empty or whitespace only")
         return v.strip()
+
+
+from pydantic import BaseModel, EmailStr
+
+
+class SignUpRequest(BaseModel):
+    full_name: str
+    email: EmailStr
+    password: str
+
+    date_of_birth: date
+
+    college_name: str
+    course: str
+    year_of_study: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str

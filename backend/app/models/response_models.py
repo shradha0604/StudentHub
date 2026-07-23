@@ -7,7 +7,7 @@ validate/serialize through these models before returning.
 """
 
 from pydantic import BaseModel
-
+from datetime import date
 
 class ChatResponse(BaseModel):
     reply: str
@@ -57,3 +57,27 @@ class FlashcardsResponse(BaseModel):
 class ErrorResponse(BaseModel):
     error: str
     detail: str | None = None
+
+from pydantic import BaseModel
+
+
+class AuthResponse(BaseModel):
+    message: str
+
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class UserResponse(BaseModel):
+    id: int
+    full_name: str
+    email: str
+    college_name: str
+    course: str
+    year_of_study: str
+    date_of_birth: date
+    class Config:
+        from_attributes = True
+
+    

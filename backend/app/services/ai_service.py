@@ -15,6 +15,8 @@ import json
 from collections.abc import AsyncGenerator
 from typing import Any
 
+from click import prompt
+
 import google.generativeai as genai
 from fastapi import HTTPException
 from google.api_core import exceptions as google_exceptions
@@ -162,8 +164,34 @@ class AIService:
     # Public methods -- one per feature
     # ------------------------------------------------------------------
 
-    async def generate_chat(self, message: str) -> str:
-        prompt = chat_prompt(message)
+    async def generate_chat(
+        self,
+        message: str,
+        history=None,
+    ) -> str:
+        conversation = ""
+
+        if history:
+            for msg in history:
+                if msg.role == "user":
+                    conversation += f"User: {msg.message}\n"
+                else:
+                    conversation += f"Assistant: {msg.message}\n"
+
+        prompt = f"""
+        You are StudentHub AI Tutor.
+
+        Continue the conversation naturally.
+
+        Previous Conversation:
+        {conversation}
+
+        Current User Message:
+        {message}
+
+        Answer naturally while remembering the previous discussion.
+        """
+
         return await self._complete(prompt)
 
     async def generate_chat_stream(

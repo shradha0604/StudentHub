@@ -44,6 +44,22 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         return self.app_env.lower() == "production"
 
+    # JWT
+    secret_key: str = Field(
+        default="studenthub_super_secret_key",
+        alias="SECRET_KEY"
+    )
+
+    algorithm: str = Field(
+        default="HS256",
+        alias="ALGORITHM"
+    )
+
+    access_token_expire_minutes: int = Field(
+        default=60,
+        alias="ACCESS_TOKEN_EXPIRE_MINUTES"
+    )
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -39,6 +39,22 @@ export const apiClient = axios.create({
   timeout: 60000
 })
 
+// ---------------------------------------------------------------------------
+// Automatically attach JWT token to every request
+// ---------------------------------------------------------------------------
+apiClient.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("token")
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
 /**
  * Normalizes any Axios error (validation errors, network errors, 5xx, etc.)
  * into a single human-readable message, matching the backend's
@@ -122,4 +138,79 @@ export async function generateFlashcards(topic: string): Promise<FlashcardsRespo
   const payload: FlashcardsRequest = { topic }
   const { data } = await apiClient.post<FlashcardsResponse>('/flashcards', payload)
   return data
+}
+
+// ---------------------------------------------------------------------------
+// Authentication
+// ---------------------------------------------------------------------------
+
+export interface LoginResponse {
+  access_token: string
+  token_type: string
+}
+
+export interface SignupRequest {
+  full_name: string
+  email: string
+  password: string
+  college_name: string
+  course: string
+  year_of_study: string
+}
+
+export async function signup(data: SignupRequest) {
+  const { data: response } = await apiClient.post(
+    "/auth/signup",
+    data
+  )
+
+  return response
+}
+
+export async function login(
+  email: string,
+  password: string
+): Promise<LoginResponse> {
+
+  const { data } = await apiClient.post<LoginResponse>(
+    "/auth/login",
+    {
+      email,
+      password,
+    }
+  )
+
+  return data
+}
+
+export async function getCurrentUser() {
+  const { data } = await apiClient.get("/auth/me")
+  return data
+}
+
+export interface SignUpData {
+  full_name: string;
+  email: string;
+  password: string;
+  date_of_birth: string;
+  college_name: string;
+  course: string;
+  year_of_study: string;
+}
+
+export async function signupUser(data: SignUpData) {
+  const response = await apiClient.post("/auth/signup", data);
+  return response.data;
+}
+
+export async function getDashboardStats() {
+  const token = localStorage.getItem("token");
+
+  const { data } = await apiClient.get("/dashboard/stats", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return data;
 }
