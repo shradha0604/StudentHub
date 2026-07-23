@@ -1,3 +1,4 @@
+"""
 Chat router -- AI Tutor feature.
 
 POST /chat             -> standard JSON response
