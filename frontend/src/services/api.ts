@@ -28,8 +28,7 @@ import type {
   ApiErrorResponse
 } from '../types/api'
 
-const API_BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? "/api"
+const API_BASE_URL = "/api"
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
